@@ -3,80 +3,87 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Workflowy‑Lite (No Storage)</title>
+  <title>Workflowy-Lite (No Storage)</title>
   <style>
     :root{
-      --bg: #0b0f14;
-      --panel: #0f1620;
-      --muted: #9fb0c0;
-      --text: #eaf2f9;
-      --soft: #1a2330;
-      --accent: #7cd4ff;
-      --accent-2:#89ffa3;
-      --danger:#ff6b6b;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --muted: #5b6b7b;
+      --text: #0b1220;
+      --soft: #f1f5fb;
+      --accent: #2563eb;
+      --accent-2:#16a34a;
+      --danger:#e11d48;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0; font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:var(--text); background:linear-gradient(180deg, var(--bg), #0c1219 60%);
+      color:var(--text); background:#f6f8fb;
     }
     .app{
       height:100%; display:grid; grid-template-rows:auto auto 1fr auto; gap:8px; padding:16px; max-width:1100px; margin:0 auto;
     }
     header{
-      display:flex; align-items:center; gap:12px; padding:8px 12px; background:var(--panel); border:1px solid #1d2735; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.35);
+      display:flex; align-items:center; gap:12px; padding:8px 12px; background:var(--panel); border:1px solid #e2e8f0; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.06);
       position:sticky; top:8px; z-index:2;
     }
     .logo{font-weight:800; letter-spacing:.2px;}
     .dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent); margin-right:6px; box-shadow:0 0 0 3px rgba(124,212,255,.2)}
     .search{
-      flex:1; display:flex; align-items:center; gap:8px; background:var(--soft); border:1px solid #1e2837; border-radius:12px; padding:8px 10px;
+      flex:1; display:flex; align-items:center; gap:8px; background:var(--soft); border:1px solid #e2e8f0; border-radius:12px; padding:8px 10px;
     }
     .search input{ width:100%; background:transparent; color:var(--text); border:0; outline:none; font-size:15px; }
     .btn{
-      appearance:none; border:1px solid #1e2837; background:var(--soft); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer;
+      appearance:none; border:1px solid #e2e8f0; background:var(--soft); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer;
       transition:.15s transform, .15s background, .15s border-color; font-weight:600;
     }
-    .btn:hover{ transform:translateY(-1px); border-color:#2a384e }
+    .btn:hover{ transform:translateY(-1px); border-color:#cbd5e1 }
     .btn:active{ transform:translateY(0) scale(.98) }
     .ghost{ background:transparent }
 
-    .toolbar{ display:flex; gap:8px; align-items:center; padding:8px 12px; background:var(--panel); border:1px solid #1d2735; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.25) }
+    .toolbar{ display:flex; gap:8px; align-items:center; padding:8px 12px; background:var(--panel); border:1px solid #e2e8f0; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.05) }
 
     .breadcrumbs{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
-    .crumb{background:var(--soft); border:1px solid #1e2837; padding:6px 10px; border-radius:999px; cursor:pointer;}
-    .crumb:hover{border-color:#2a384e}
+    .crumb{background:var(--soft); border:1px solid #e2e8f0; padding:6px 10px; border-radius:999px; cursor:pointer;}
+    .crumb:hover{border-color:#cbd5e1}
     .sep{opacity:.5}
 
     main{
-      overflow:auto; padding:8px; background:var(--panel); border:1px solid #1d2735; border-radius:16px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+      overflow:auto; padding:8px; background:var(--panel); border:1px solid #e2e8f0; border-radius:16px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.02);
     }
 
     ul.outline{ list-style:none; padding-left:0; margin:0; }
-    .li{ display:flex; align-items:flex-start; gap:8px; padding:4px 6px; border-radius:10px; border:1px solid transparent; }
-    .li.focused{ border-color:#2a384e; background:rgba(42,56,78,.25) }
-    .bullet{
-      width:22px; height:22px; margin-top:2px; border-radius:50%; background: radial-gradient(circle at 30% 30%, #c2e9ff 0 2px, transparent 3px) , var(--soft);
-      border:1px solid #263347; cursor:pointer; display:grid; place-items:center; flex:0 0 auto;
-    }
-    .bullet.collapsed::after{ content:"+"; font-weight:700; opacity:.8 }
-    .bullet:not(.collapsed)::after{ content:"•"; font-size:24px; line-height:0; margin-top:-2px; opacity:.9 }
+    .li{ position:relative; display:flex; align-items:flex-start; gap:8px; padding:2px 6px; margin:2px 0; border-radius:10px; border:1px solid transparent; }
+    .li.focused{ border-color:#cbd5e1; background:#f8fafc }
 
-    .text{ flex:1; min-height:22px; outline:none; padding:2px 6px; border-radius:8px; }
-    .text:empty:before{ content:attr(data-placeholder); opacity:.5 }
+    /* Bullet chevron */
+    .bullet{ width:20px; height:20px; margin-top:2px; border-radius:6px; background: var(--soft); border:1px solid #d5dde8; cursor:pointer; display:grid; place-items:center; flex:0 0 auto; font-size:12px; line-height:1; }
+    .bullet.collapsed::after{ content:"▸"; font-weight:700; opacity:.8 }
+    .bullet:not(.collapsed)::after{ content:"▾"; font-weight:700; opacity:.8 }
 
-    .children{ padding-left:26px; margin-top:2px; }
+    .text{ flex:1; min-height:20px; outline:none; padding:2px 6px; border-radius:8px; }
+    .text:empty:before{ content:attr(data-placeholder); opacity:.45 }
+
+    /* Tight child spacing + guide lines */
+    .children{ padding-left:16px; margin-top:0.25em; border-left:1px solid #e2e8f0; }
+    .children .li::before{ content:""; position:absolute; left:-16px; top:12px; width:16px; height:1px; background:#e2e8f0; }
+    ul.outline > .li::before{ display:none }
+
     .hidden{ display:none }
-
     .hint{ color:var(--muted); font-size:13px; padding:10px 2px; }
+    .li.match{ background:#fffbe6; border-color:#fde68a }
+    .li.match .text{ font-weight:600 }
     kbd{ background:#1b2433; border:1px solid #2a384e; padding:2px 6px; border-radius:6px; font-size:12px }
 
     .footer{ color:var(--muted); font-size:12px; display:flex; justify-content:space-between; align-items:center; padding:8px 2px }
     .muted{ color:var(--muted) }
-    .pill{ background:#112033; border:1px solid #1e2b41; padding:4px 8px; border-radius:999px }
+    .pill{ background:#f1f5fb; border:1px solid #e2e8f0; padding:4px 8px; border-radius:999px }
     .danger{ color:var(--danger) }
     .success{ color:var(--accent-2) }
+
+    /* Hide file input for import */
+    #importFile{ display:none }
 
     @media (max-width:700px){
       .app{ padding:10px; gap:6px }
@@ -88,13 +95,20 @@
 <body>
   <div class="app">
     <header>
-      <div class="logo"><span class="dot"></span>Workflowy‑Lite</div>
+      <div class="logo"><span class="dot"></span>Workflowy-Lite</div>
       <div class="search" title="Filter (Ctrl/Cmd+K)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         <input id="search" placeholder="Search or jump… (Ctrl/Cmd+K)" />
       </div>
       <button class="btn" id="addRoot">+ New</button>
       <button class="btn ghost" id="expandAll" title="Expand/Collapse all">Expand all</button>
+
+      <!-- Export / Import -->
+      <button class="btn" id="exportMD" title="Export current view as Markdown">Export MD</button>
+      <button class="btn" id="exportJSON" title="Export current view as JSON">Export JSON</button>
+      <button class="btn" id="exportTXT" title="Export current view as plain text">Export TXT</button>
+      <button class="btn" id="importBtn" title="Import into current view (appends)">Import…</button>
+      <input type="file" id="importFile" accept=".json,.md,.markdown,.txt,.text" />
     </header>
 
     <div class="toolbar">
@@ -132,7 +146,7 @@
   // Seed data
   const initial = makeNode("My life outline", [
     makeNode("Projects", [
-      makeNode("Workflowy‑Lite clone (today)")
+      makeNode("Workflowy-Lite clone (today)")
     ]),
     makeNode("Personal", [
       makeNode("Groceries"),
@@ -154,10 +168,10 @@
     const list = $('#outline');
     list.innerHTML = '';
 
-    const { nodes, matches } = getVisible(view, filterQuery);
+    const { nodes, matches, forceOpen } = getVisible(view, filterQuery);
 
     for (const n of nodes) {
-      list.appendChild(renderNode(n, matches));
+      list.appendChild(renderNode(n, matches, forceOpen));
     }
 
     // Update expand button label
@@ -187,12 +201,13 @@
     });
   }
 
-  function renderNode(node, matches){
+  function renderNode(node, matches, forceOpen){
     const li = document.createElement('li');
     li.className = 'li';
 
     const bullet = document.createElement('button');
-    bullet.className = 'bullet' + (node.collapsed ? ' collapsed' : '');
+    const isForcedOpen = forceOpen && forceOpen.has(node.id);
+    bullet.className = 'bullet' + ((node.collapsed && !isForcedOpen) ? ' collapsed' : '');
     bullet.title = 'Click: collapse • Alt+Click: zoom into';
     bullet.onclick = (e) => {
       if (e.altKey){ view = node; selectedId = null; render(); return; }
@@ -219,9 +234,10 @@
     const kids = document.createElement('div'); kids.className = 'children';
     if (node.children.length) {
       const childList = document.createElement('ul'); childList.className='outline';
-      if (node.collapsed) childList.classList.add('hidden');
+      const isClosed = node.collapsed && !(forceOpen && forceOpen.has(node.id));
+      if (isClosed) childList.classList.add('hidden');
       for (const c of node.children){
-        childList.appendChild(renderNode(c, matches));
+        childList.appendChild(renderNode(c, matches, forceOpen));
       }
       kids.appendChild(childList);
     }
@@ -231,7 +247,8 @@
     // highlight if selected
     if (selectedId === node.id) li.classList.add('focused');
 
-    // hide if filtered out
+    // mark match & hide if filtered out
+    if (matches && matches.has(node.id)) li.classList.add('match');
     if (matches && !matches.has(node.id)) li.classList.add('hidden');
 
     return li;
@@ -245,22 +262,23 @@
 
   // --------------- Filtering ---------------
   function getVisible(rootNode, query){
-    if (!query) return { nodes: rootNode.children, matches: null };
+    if (!query) return { nodes: rootNode.children, matches: null, forceOpen: null };
     query = query.toLowerCase();
     const matches = new Set();
+    const forceOpen = new Set();
 
     function dfs(node, ancestors){
       const hit = (node.text || '').toLowerCase().includes(query);
       if (hit){
         matches.add(node.id);
-        ancestors.forEach(a => matches.add(a.id));
+        ancestors.forEach(a => { matches.add(a.id); forceOpen.add(a.id); });
       }
       if (!node.children) return;
       for (const c of node.children) dfs(c, hit ? [node, ...ancestors] : ancestors);
     }
     dfs(rootNode, []);
 
-    return { nodes: rootNode.children, matches };
+    return { nodes: rootNode.children, matches, forceOpen };
   }
 
   // --------------- Keyboard actions ---------------
@@ -456,13 +474,129 @@
 
   $('#expandAll').onclick = () => {
     expandModeAll = !expandModeAll;
-    function walk(nodes){
-      for (const n of nodes){ n.collapsed = !expandModeAll ? n.collapsed : false; if (n.children.length){ if (!expandModeAll){} walk(n.children);} }
-    }
     function setAll(nodes, val){ for (const n of nodes){ n.collapsed = !val; if (n.children.length) setAll(n.children, val); } }
     setAll(view.children, expandModeAll);
     render();
   };
+
+  // --------------- Export / Import ---------------
+  function toJSON(node){
+    const clone = ({ text, collapsed, children }) => ({ text, collapsed, children: (children||[]).map(clone) });
+    return clone(node);
+  }
+
+  function toMarkdown(node){
+    const lines = [];
+    const walk = (nodes, depth=0) => {
+      for (const n of nodes){
+        const t = (n.text || '').replace(/\s+/g,' ').trim();
+        lines.push(`${'  '.repeat(depth)}- ${t}`);
+        if (n.children && n.children.length) walk(n.children, depth+1);
+      }
+    };
+    walk(node.children, 0);
+    return lines.join('\n');
+  }
+
+  function toText(node){
+    const lines = [];
+    const walk = (nodes, depth=0) => {
+      for (const n of nodes){
+        const t = (n.text || '').replace(/\s+/g,' ').trim();
+        lines.push(`${'  '.repeat(depth)}${t}`);
+        if (n.children && n.children.length) walk(n.children, depth+1);
+      }
+    };
+    walk(node.children, 0);
+    return lines.join('\n');
+  }
+
+  function download(name, content, mime){
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+
+  document.getElementById('exportMD').onclick = () => download('workflowy-lite.md', toMarkdown(view), 'text/markdown');
+  document.getElementById('exportJSON').onclick = () => download('workflowy-lite.json', JSON.stringify(toJSON(view), null, 2), 'application/json');
+  document.getElementById('exportTXT').onclick = () => download('workflowy-lite.txt', toText(view), 'text/plain');
+
+  document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
+  document.getElementById('importFile').addEventListener('change', handleImport, false);
+
+  function handleImport(evt){
+    const file = evt.target.files[0]; if (!file) return;
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || '');
+      let nodes = [];
+      try{
+        if (ext === 'json' || text.trim().startsWith('{') || text.trim().startsWith('[')){
+          nodes = importFromJSON(text);
+        } else if (ext === 'md' || ext === 'markdown'){
+          nodes = importFromMarkdown(text);
+        } else {
+          nodes = importFromText(text);
+        }
+      } catch(e){
+        alert('Import failed: ' + (e && e.message ? e.message : e));
+        return;
+      }
+      view.children.push(...nodes);
+      render();
+      evt.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  function importFromJSON(raw){
+    const data = JSON.parse(raw);
+    const normalize = (o) => makeNode(String(o.text||''), (o.children||[]).map(normalize));
+    if (Array.isArray(data.children)) return data.children.map(normalize);
+    if (Array.isArray(data)) return data.map(normalize);
+    if (data && typeof data === 'object') return [normalize(data)];
+    return [];
+  }
+
+  function importFromMarkdown(raw){
+    const lines = raw.split(/\r?\n/).filter(l=>l.trim().length);
+    return parseIndentedLines(lines, true);
+  }
+
+  function importFromText(raw){
+    const lines = raw.split(/\r?\n/).filter(l=>l.trim().length);
+    return parseIndentedLines(lines, false);
+  }
+
+  function parseIndentedLines(lines, isMarkdown){
+    const rootTmp = makeNode('root');
+    const stack = [{ level: -1, node: rootTmp }];
+
+    const getLevel = (line) => {
+      let i=0, spaces=0;
+      while (i < line.length && (line[i] === ' ' || line[i] === '\t')){ spaces += (line[i] === '\t' ? 2 : 1); i++; }
+      return Math.floor(spaces/2); // 2 spaces per level
+    };
+
+    const clean = (line) => {
+      line = line.replace(/^\s+/, '');
+      if (isMarkdown) line = line.replace(/^[*+-]\s+/, '');
+      return line.trim();
+    };
+
+    for (let raw of lines){
+      const level = getLevel(raw);
+      const text = clean(raw);
+      const node = makeNode(text);
+      while (stack.length && level <= stack[stack.length-1].level){ stack.pop(); }
+      stack[stack.length-1].node.children.push(node);
+      stack.push({ level, node });
+    }
+    return rootTmp.children;
+  }
 
   // --------------- Boot ---------------
   render();
