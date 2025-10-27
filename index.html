@@ -1,1 +1,476 @@
-tinyflow
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Workflowy‑Lite (No Storage)</title>
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --panel: #0f1620;
+      --muted: #9fb0c0;
+      --text: #eaf2f9;
+      --soft: #1a2330;
+      --accent: #7cd4ff;
+      --accent-2:#89ffa3;
+      --danger:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text); background:linear-gradient(180deg, var(--bg), #0c1219 60%);
+    }
+    .app{
+      height:100%; display:grid; grid-template-rows:auto auto 1fr auto; gap:8px; padding:16px; max-width:1100px; margin:0 auto;
+    }
+    header{
+      display:flex; align-items:center; gap:12px; padding:8px 12px; background:var(--panel); border:1px solid #1d2735; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.35);
+      position:sticky; top:8px; z-index:2;
+    }
+    .logo{font-weight:800; letter-spacing:.2px;}
+    .dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent); margin-right:6px; box-shadow:0 0 0 3px rgba(124,212,255,.2)}
+    .search{
+      flex:1; display:flex; align-items:center; gap:8px; background:var(--soft); border:1px solid #1e2837; border-radius:12px; padding:8px 10px;
+    }
+    .search input{ width:100%; background:transparent; color:var(--text); border:0; outline:none; font-size:15px; }
+    .btn{
+      appearance:none; border:1px solid #1e2837; background:var(--soft); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer;
+      transition:.15s transform, .15s background, .15s border-color; font-weight:600;
+    }
+    .btn:hover{ transform:translateY(-1px); border-color:#2a384e }
+    .btn:active{ transform:translateY(0) scale(.98) }
+    .ghost{ background:transparent }
+
+    .toolbar{ display:flex; gap:8px; align-items:center; padding:8px 12px; background:var(--panel); border:1px solid #1d2735; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.25) }
+
+    .breadcrumbs{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+    .crumb{background:var(--soft); border:1px solid #1e2837; padding:6px 10px; border-radius:999px; cursor:pointer;}
+    .crumb:hover{border-color:#2a384e}
+    .sep{opacity:.5}
+
+    main{
+      overflow:auto; padding:8px; background:var(--panel); border:1px solid #1d2735; border-radius:16px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    ul.outline{ list-style:none; padding-left:0; margin:0; }
+    .li{ display:flex; align-items:flex-start; gap:8px; padding:4px 6px; border-radius:10px; border:1px solid transparent; }
+    .li.focused{ border-color:#2a384e; background:rgba(42,56,78,.25) }
+    .bullet{
+      width:22px; height:22px; margin-top:2px; border-radius:50%; background: radial-gradient(circle at 30% 30%, #c2e9ff 0 2px, transparent 3px) , var(--soft);
+      border:1px solid #263347; cursor:pointer; display:grid; place-items:center; flex:0 0 auto;
+    }
+    .bullet.collapsed::after{ content:"+"; font-weight:700; opacity:.8 }
+    .bullet:not(.collapsed)::after{ content:"•"; font-size:24px; line-height:0; margin-top:-2px; opacity:.9 }
+
+    .text{ flex:1; min-height:22px; outline:none; padding:2px 6px; border-radius:8px; }
+    .text:empty:before{ content:attr(data-placeholder); opacity:.5 }
+
+    .children{ padding-left:26px; margin-top:2px; }
+    .hidden{ display:none }
+
+    .hint{ color:var(--muted); font-size:13px; padding:10px 2px; }
+    kbd{ background:#1b2433; border:1px solid #2a384e; padding:2px 6px; border-radius:6px; font-size:12px }
+
+    .footer{ color:var(--muted); font-size:12px; display:flex; justify-content:space-between; align-items:center; padding:8px 2px }
+    .muted{ color:var(--muted) }
+    .pill{ background:#112033; border:1px solid #1e2b41; padding:4px 8px; border-radius:999px }
+    .danger{ color:var(--danger) }
+    .success{ color:var(--accent-2) }
+
+    @media (max-width:700px){
+      .app{ padding:10px; gap:6px }
+      header, .toolbar{ border-radius:12px }
+      .children{ padding-left:18px }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo"><span class="dot"></span>Workflowy‑Lite</div>
+      <div class="search" title="Filter (Ctrl/Cmd+K)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input id="search" placeholder="Search or jump… (Ctrl/Cmd+K)" />
+      </div>
+      <button class="btn" id="addRoot">+ New</button>
+      <button class="btn ghost" id="expandAll" title="Expand/Collapse all">Expand all</button>
+    </header>
+
+    <div class="toolbar">
+      <div class="breadcrumbs" id="breadcrumbs"></div>
+      <div style="flex:1"></div>
+      <span class="pill">No storage • session only</span>
+    </div>
+
+    <main>
+      <ul id="outline" class="outline"></ul>
+      <div class="hint">
+        <strong>Shortcuts:</strong> <kbd>Enter</kbd> new sibling, <kbd>Tab</kbd>/<kbd>Shift+Tab</kbd> indent/outdent, <kbd>Backspace</kbd> on empty to delete, <kbd>↑/↓</kbd> move focus, click bullet to collapse, <kbd>Alt+Click</kbd> bullet to <em>zoom</em>, <kbd>Esc</kbd> back, <kbd>Ctrl/Cmd+K</kbd> search.
+      </div>
+    </main>
+
+    <div class="footer">
+      <div>Built fast with vanilla <span class="muted">HTML/CSS/JS</span> · <span class="success">no backend</span></div>
+      <div class="muted">Inspired by Workflowy. For demo purposes only.</div>
+    </div>
+  </div>
+
+  <script>
+  // ------------------------------
+  // Simple in-memory outliner
+  // ------------------------------
+  const $ = (s, el=document) => el.querySelector(s);
+  const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+
+  let idCounter = 1;
+  const newId = () => String(idCounter++);
+
+  /** Tree node shape: { id, text, collapsed, children: [] } */
+  const makeNode = (text="", children=[]) => ({ id:newId(), text, collapsed:false, children });
+
+  // Seed data
+  const initial = makeNode("My life outline", [
+    makeNode("Projects", [
+      makeNode("Workflowy‑Lite clone (today)")
+    ]),
+    makeNode("Personal", [
+      makeNode("Groceries"),
+      makeNode("Books to read")
+    ]),
+    makeNode("Ideas")
+  ]);
+
+  // State
+  let root = initial;        // absolute root (not shown in list)
+  let view = root;           // current zoomed node
+  let selectedId = null;     // currently focused editable node id
+  let filterQuery = "";      // search query
+  let expandModeAll = false; // for Expand all button toggle
+
+  // --------------- Rendering ---------------
+  function render(){
+    renderBreadcrumbs();
+    const list = $('#outline');
+    list.innerHTML = '';
+
+    const { nodes, matches } = getVisible(view, filterQuery);
+
+    for (const n of nodes) {
+      list.appendChild(renderNode(n, matches));
+    }
+
+    // Update expand button label
+    $('#expandAll').textContent = expandModeAll ? 'Collapse all' : 'Expand all';
+
+    // Keep selection visible
+    if (selectedId){
+      const el = document.querySelector(`[data-id="${selectedId}"]`);
+      if (el) el.scrollIntoView({ block:'nearest' });
+    }
+  }
+
+  function renderBreadcrumbs(){
+    const bc = $('#breadcrumbs');
+    bc.innerHTML = '';
+    const chain = pathToNode(view.id);
+    chain.forEach((node, i) => {
+      const span = document.createElement('span');
+      span.className = 'crumb';
+      span.textContent = i === 0 ? 'Home' : node.text || '(empty)';
+      span.title = 'Jump to ' + (i===0 ? 'Home' : node.text || '(empty)');
+      span.onclick = () => { view = node; selectedId = null; render(); };
+      bc.appendChild(span);
+      if (i < chain.length - 1){
+        const sep = document.createElement('span'); sep.className='sep'; sep.textContent='›'; bc.appendChild(sep);
+      }
+    });
+  }
+
+  function renderNode(node, matches){
+    const li = document.createElement('li');
+    li.className = 'li';
+
+    const bullet = document.createElement('button');
+    bullet.className = 'bullet' + (node.collapsed ? ' collapsed' : '');
+    bullet.title = 'Click: collapse • Alt+Click: zoom into';
+    bullet.onclick = (e) => {
+      if (e.altKey){ view = node; selectedId = null; render(); return; }
+      node.collapsed = !node.collapsed; render();
+    };
+
+    const text = document.createElement('div');
+    text.className = 'text';
+    text.contentEditable = true;
+    text.dataset.id = node.id;
+    text.setAttribute('spellcheck','false');
+    text.setAttribute('data-placeholder','List item');
+    text.textContent = node.text;
+
+    text.addEventListener('focus', () => focusNode(node.id, li));
+    text.addEventListener('input', () => { node.text = text.textContent; });
+
+    text.addEventListener('keydown', (e) => handleEditorKeys(e, node));
+
+    li.appendChild(bullet);
+    li.appendChild(text);
+
+    // children
+    const kids = document.createElement('div'); kids.className = 'children';
+    if (node.children.length) {
+      const childList = document.createElement('ul'); childList.className='outline';
+      if (node.collapsed) childList.classList.add('hidden');
+      for (const c of node.children){
+        childList.appendChild(renderNode(c, matches));
+      }
+      kids.appendChild(childList);
+    }
+
+    li.appendChild(kids);
+
+    // highlight if selected
+    if (selectedId === node.id) li.classList.add('focused');
+
+    // hide if filtered out
+    if (matches && !matches.has(node.id)) li.classList.add('hidden');
+
+    return li;
+  }
+
+  function focusNode(id, liEl){
+    selectedId = id;
+    $$('.li').forEach(li => li.classList.remove('focused'));
+    if (liEl) liEl.classList.add('focused');
+  }
+
+  // --------------- Filtering ---------------
+  function getVisible(rootNode, query){
+    if (!query) return { nodes: rootNode.children, matches: null };
+    query = query.toLowerCase();
+    const matches = new Set();
+
+    function dfs(node, ancestors){
+      const hit = (node.text || '').toLowerCase().includes(query);
+      if (hit){
+        matches.add(node.id);
+        ancestors.forEach(a => matches.add(a.id));
+      }
+      if (!node.children) return;
+      for (const c of node.children) dfs(c, hit ? [node, ...ancestors] : ancestors);
+    }
+    dfs(rootNode, []);
+
+    return { nodes: rootNode.children, matches };
+  }
+
+  // --------------- Keyboard actions ---------------
+  function handleEditorKeys(e, node){
+    const current = e.currentTarget;
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      insertSibling(node, /*after*/true);
+      return;
+    }
+    if (e.key === 'Tab'){
+      e.preventDefault();
+      if (e.shiftKey) outdent(node); else indent(node);
+      return;
+    }
+    if (e.key === 'Backspace'){
+      const txt = current.textContent.trim();
+      if (!txt){
+        e.preventDefault();
+        deleteNode(node);
+      }
+      return;
+    }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown'){
+      e.preventDefault();
+      moveFocus(node.id, e.key === 'ArrowDown');
+      return;
+    }
+    if (e.key === 'Escape'){
+      // zoom out one level if possible
+      const chain = pathToNode(node.id);
+      if (chain.length > 1){ view = chain[chain.length - 2]; selectedId = null; render(); }
+      return;
+    }
+  }
+
+  function linearizeVisible(){
+    const arr = [];
+    function walk(nodes){
+      for (const n of nodes){
+        arr.push(n);
+        if (!n.collapsed && n.children.length) walk(n.children);
+      }
+    }
+    walk(view.children);
+    return arr;
+  }
+
+  function moveFocus(id, forward=true){
+    const list = linearizeVisible();
+    const idx = list.findIndex(n => n.id === id);
+    const next = list[idx + (forward ? 1 : -1)];
+    if (next){
+      selectedId = next.id; render();
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-id="${next.id}"]`);
+        if (el){ el.focus(); placeCaretAtEnd(el); }
+      });
+    }
+  }
+
+  function placeCaretAtEnd(el){
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel.removeAllRanges(); sel.addRange(range);
+  }
+
+  // --------------- Tree Ops ---------------
+  function findParentAndIndex(targetId, node=view){
+    const kids = node.children;
+    for (let i=0;i<kids.length;i++){
+      const k = kids[i];
+      if (k.id === targetId) return { parent: node, index: i };
+      if (k.children.length){
+        const deeper = findParentAndIndex(targetId, k);
+        if (deeper) return deeper;
+      }
+    }
+    return null;
+  }
+
+  function insertSibling(node, after){
+    const ref = findParentAndIndex(node.id, view);
+    if (!ref) return;
+    const { parent, index } = ref;
+    const newNode = makeNode("");
+    parent.children.splice(index + (after?1:0), 0, newNode);
+    render();
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-id="${newNode.id}"]`);
+      if (el){ el.focus(); }
+      selectedId = newNode.id;
+    });
+  }
+
+  function deleteNode(node){
+    const ref = findParentAndIndex(node.id, view);
+    if (!ref) return;
+    const { parent, index } = ref;
+    parent.children.splice(index,1);
+    render();
+    // focus previous visible
+    const flat = linearizeVisible();
+    const prev = flat[Math.max(0, flat.findIndex(n => n.id===node.id) - 1)] || parent;
+    const targetId = prev.id || (prev.children[0] && prev.children[0].id);
+    if (targetId){
+      const el = document.querySelector(`[data-id="${targetId}"]`);
+      if (el){ el.focus(); }
+      selectedId = targetId;
+    }
+  }
+
+  function indent(node){
+    const ref = findParentAndIndex(node.id, view);
+    if (!ref) return;
+    const { parent, index } = ref;
+    if (index === 0) return; // can't indent first child
+    const prevSibling = parent.children[index - 1];
+    // move node under previous sibling
+    parent.children.splice(index,1);
+    prevSibling.children.push(node);
+    prevSibling.collapsed = false;
+    render();
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-id="${node.id}"]`);
+      if (el){ el.focus(); }
+    });
+  }
+
+  function outdent(node){
+    const ref = findParentAndIndex(node.id, view);
+    if (!ref) return;
+    const { parent } = ref;
+    const up = findParentAndIndex(parent.id, view);
+    if (!up) return; // already at top of view
+    // remove from parent
+    const idx = parent.children.findIndex(c => c.id === node.id);
+    parent.children.splice(idx,1);
+    // insert after parent in its parent
+    const { parent: grand, index: pIdx } = up;
+    grand.children.splice(pIdx + 1, 0, node);
+    render();
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-id="${node.id}"]`);
+      if (el){ el.focus(); }
+    });
+  }
+
+  // --------------- Utilities ---------------
+  function pathToNode(id){
+    const chain = [root];
+    function dfs(node){
+      if (node.id === id){ chain.push(node); return true; }
+      for (const c of node.children){
+        chain.push(c);
+        if (c.id === id) return true;
+        if (dfs(c)) return true;
+        chain.pop();
+      }
+      chain.pop();
+      return false;
+    }
+    if (id !== root.id) dfs(root);
+    // trim to path only
+    const path = [];
+    const seen = new Set();
+    for (const n of chain){ if (!seen.has(n)) { path.push(n); seen.add(n);} }
+    // ensure starts with root and ends with view
+    const idxView = path.findIndex(n => n.id === view.id);
+    return idxView >= 0 ? path.slice(0, idxView + 1) : [root];
+  }
+
+  // --------------- Search ---------------
+  const search = $('#search');
+  search.addEventListener('input', (e)=>{ filterQuery = e.target.value.trim(); render(); });
+  window.addEventListener('keydown', (e)=>{
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='k'){
+      e.preventDefault(); search.focus(); search.select();
+    }
+  });
+
+  // --------------- Top bar actions ---------------
+  $('#addRoot').onclick = () => {
+    const n = makeNode("");
+    view.children.push(n);
+    render();
+    requestAnimationFrame(()=>{
+      const el = document.querySelector(`[data-id="${n.id}"]`); if (el){ el.focus(); }
+    });
+  };
+
+  $('#expandAll').onclick = () => {
+    expandModeAll = !expandModeAll;
+    function walk(nodes){
+      for (const n of nodes){ n.collapsed = !expandModeAll ? n.collapsed : false; if (n.children.length){ if (!expandModeAll){} walk(n.children);} }
+    }
+    function setAll(nodes, val){ for (const n of nodes){ n.collapsed = !val; if (n.children.length) setAll(n.children, val); } }
+    setAll(view.children, expandModeAll);
+    render();
+  };
+
+  // --------------- Boot ---------------
+  render();
+
+  // Focus the first item on load for quick typing
+  setTimeout(()=>{
+    const first = document.querySelector('.text'); if (first){ first.focus(); }
+  }, 50);
+  </script>
+</body>
+</html>
